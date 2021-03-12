@@ -5,7 +5,6 @@ require 'dummy_provider_models'
 
 describe OAuth::Provider::Authorizer do
 
-
   describe "Authorization code" do
 
     describe "should issue code" do
@@ -33,21 +32,6 @@ describe OAuth::Provider::Authorizer do
         @authorizer.should be_authorized
 
       end
-
-      # it "should allow for a secondary secret" do
-      #   ::Oauth2Verifier.should_receive(:create!).with(:client_application=>@app,
-      #                                                  :user=>@user,
-      #                                                  :callback_url=>'http://mysite.com/callback',
-      #                                                  :scope => 'a b').and_return(@code)
-      #
-      #   @authorizer = OAuth::Provider::Authorizer.new @user, true, :response_type => 'code',
-      #                                                 :scope => "a b",
-      #                                                 :client_id => 'client id',
-      #                                                 :redirect_uri => 'http://mysite.com/callback'
-      #
-      #   @authorizer.redirect_uri.should == "http://mysite.com/callback?code=secondarysecret%20auth%20code"
-      #   @authorizer.should be_authorized
-      # end
 
       it "should include state" do
         ::Oauth2Verifier.should_receive(:create!).with( :client_application=>@app,
@@ -81,6 +65,31 @@ describe OAuth::Provider::Authorizer do
       end
     end
 
+    # FIXME: I don't think this actually checks against the controller
+    describe "should issue code for application with secondary secret" do
+      before(:each) do
+        @user = double("user")
+        @app = double("app")
+        @code = double("code", :token => "secret auth code")
+
+        ::ClientApplication.should_receive(:find_by_key!).with('client id').and_return(@app)
+      end
+
+      it "should allow" do
+        ::Oauth2Verifier.should_receive(:create!).with(:client_application=>@app,
+                                                       :user=>@user,
+                                                       :callback_url=>'http://mysite.com/callback',
+                                                       :scope => 'a b').and_return(@code)
+
+        @authorizer = OAuth::Provider::Authorizer.new @user, true, :response_type => 'code',
+                                                      :scope => "a b",
+                                                      :client_id => 'client id',
+                                                      :redirect_uri => 'http://mysite.com/callback'
+
+        @authorizer.redirect_uri.should == "http://mysite.com/callback?code=secret%20auth%20code"
+        @authorizer.should be_authorized
+      end
+    end
 
   end
 

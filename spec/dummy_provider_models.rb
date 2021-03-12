@@ -17,7 +17,10 @@ class ClientApplication
   def secret
     "secret"
   end
+end
 
+# FIXME: would be good to test against this but the authorizer expects the base type directly
+class SecondaryClientApplication < ClientApplication
   def secondary_secret
     "secondarysecret"
   end
