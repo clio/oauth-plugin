@@ -17,6 +17,10 @@ class ClientApplication
   def secret
     "secret"
   end
+
+  def secondary_secret
+    "secondarysecret"
+  end
 end
 
 class OauthToken
